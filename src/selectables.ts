@@ -7,18 +7,6 @@ import { Subject, Observable } from 'rxjs';
  */
 
 export class Selectable {
-  private _enabled = false;
-  private _userSelect: string;
-  private _options: SelectableOptions;
-  private _zone: HTMLElement;
-  private _items: HTMLElement[];
-  private _selectionRectangle: HTMLDivElement;
-  private _mouseDownPosition: [number, number];
-
-  private _start: Subject<never> = new Subject<never>();
-  private _stop: Subject<HTMLElement[]> = new Subject<HTMLElement[]>();
-  private _select: Subject<HTMLElement> = new Subject<HTMLElement>();
-  private _deselect: Subject<HTMLElement> = new Subject<HTMLElement>();
 
   public get start(): Observable<never> { return this._start.asObservable(); }
   public get stop(): Observable<HTMLElement[]> { return this._stop.asObservable(); }
@@ -32,62 +20,18 @@ export class Selectable {
 
   public get enabled(): boolean { return this._enabled; }
   public get zone(): HTMLElement { return this._zone; }
+  private _enabled = false;
+  private _userSelect: string;
+  private _options: SelectableOptions;
+  private _zone: HTMLElement;
+  private _items: HTMLElement[];
+  private _selectionRectangle: HTMLDivElement;
+  private _mouseDownPosition: [number, number];
 
-  public enable() {
-    if (this.enabled) { return; }
-
-    this.zone.addEventListener('mousedown', this.onMouseDown);
-    document.body.addEventListener('mousemove', this.onMouseMove);
-    window.addEventListener('mouseup', this.onMouseUp);
-
-    this._items = Array.from(this.zone.querySelectorAll(this._options.elements));
-    this._enabled = true;
-  }
-
-  public disable() {
-    if (!this.enabled) { return; }
-
-    this.zone.removeEventListener('mousedown', this.onMouseDown);
-    document.body.removeEventListener('mousemove', this.onMouseMove);
-    window.removeEventListener('mouseup', this.onMouseUp);
-
-    this._items = [];
-    this._enabled = false;
-  }
-
-  private loadOptions(options: Partial<SelectableOptions>) {
-    this._options = Object.assign({}, defaults, options);
-
-    // Load the zone.
-    this._zone = typeof this._options.zone === 'string'
-      ? document.querySelector(this._options.zone) : this._options.zone;
-    if (!this.zone) { throw new Error('No zone element found.'); }
-  }
-
-  private createSelectionRectangle(x: number, y: number) {
-    if (!this._selectionRectangle) {
-      this._selectionRectangle = document.createElement('div');
-      this._selectionRectangle.id = 's-rectBox';
-      this._selectionRectangle.style.left = x + 'px';
-      this._selectionRectangle.style.top = y + 'px';
-      document.body.appendChild(this._selectionRectangle);
-    }
-  }
-
-  private removeSelectionRectangle() {
-    this._selectionRectangle.parentNode.removeChild(this._selectionRectangle);
-    this._selectionRectangle = null;
-  }
-
-  private setTextSelection(enabled: boolean) {
-    if (enabled) {
-      document.body.style.userSelect = this._userSelect;
-      this._userSelect = undefined;
-    } else {
-      this._userSelect = document.body.style.userSelect;
-      document.body.style.userSelect = 'none';
-    }
-  }
+  private _start: Subject<never> = new Subject<never>();
+  private _stop: Subject<HTMLElement[]> = new Subject<HTMLElement[]>();
+  private _select: Subject<HTMLElement> = new Subject<HTMLElement>();
+  private _deselect: Subject<HTMLElement> = new Subject<HTMLElement>();
 
   private onMouseDown = ((e: MouseEvent) => {
     if (e.button !== 0) { return; } // Only fire on left mouse button.
@@ -162,4 +106,60 @@ export class Selectable {
     this._stop.next(selected);
 
   }).bind(this);
+
+  public enable() {
+    if (this.enabled) { return; }
+
+    this.zone.addEventListener('mousedown', this.onMouseDown);
+    document.body.addEventListener('mousemove', this.onMouseMove);
+    window.addEventListener('mouseup', this.onMouseUp);
+
+    this._items = Array.from(this.zone.querySelectorAll(this._options.elements));
+    this._enabled = true;
+  }
+
+  public disable() {
+    if (!this.enabled) { return; }
+
+    this.zone.removeEventListener('mousedown', this.onMouseDown);
+    document.body.removeEventListener('mousemove', this.onMouseMove);
+    window.removeEventListener('mouseup', this.onMouseUp);
+
+    this._items = [];
+    this._enabled = false;
+  }
+
+  private loadOptions(options: Partial<SelectableOptions>) {
+    this._options = Object.assign({}, defaults, options);
+
+    // Load the zone.
+    this._zone = typeof this._options.zone === 'string'
+      ? document.querySelector(this._options.zone) : this._options.zone;
+    if (!this.zone) { throw new Error('No zone element found.'); }
+  }
+
+  private createSelectionRectangle(x: number, y: number) {
+    if (!this._selectionRectangle) {
+      this._selectionRectangle = document.createElement('div');
+      this._selectionRectangle.id = 's-rectBox';
+      this._selectionRectangle.style.left = x + 'px';
+      this._selectionRectangle.style.top = y + 'px';
+      document.body.appendChild(this._selectionRectangle);
+    }
+  }
+
+  private removeSelectionRectangle() {
+    this._selectionRectangle.parentNode.removeChild(this._selectionRectangle);
+    this._selectionRectangle = null;
+  }
+
+  private setTextSelection(enabled: boolean) {
+    if (enabled) {
+      document.body.style.userSelect = this._userSelect;
+      this._userSelect = undefined;
+    } else {
+      this._userSelect = document.body.style.userSelect;
+      document.body.style.userSelect = 'none';
+    }
+  }
 }

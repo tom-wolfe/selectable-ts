@@ -16,7 +16,7 @@ export function elementsIntersect(a: HTMLElement, b: HTMLElement): boolean {
 function suspend(e: Event) {
   e.preventDefault();
   e.stopPropagation();
-} 
+}
 
 export function allowElementClick(el: HTMLElement, enabled: boolean) {
   if (enabled) {
