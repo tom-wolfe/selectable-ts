@@ -7,7 +7,7 @@ A TypeScript library for adding drag select functionality. Based on [p34eu/selec
   const foo = new Selectable({
     zone: '#selected'
     selectedClass: 'active',
-    elements: 'a',
+    elements: 'a'
   });
 
   foo.start.subscribe(_ => console.log('Selection started...'));

@@ -1,7 +1,7 @@
 export interface SelectableOptions {
-  zone: string | HTMLElement; // ID of the element with selectables.
-  elements: string; // items to be selectable .list-group, #id > .class,'htmlelement' - valid querySelectorAll
-  selectedClass: string; // class name to apply to selected items
+  zone: string | HTMLElement;
+  elements: string;
+  selectedClass: string;
 }
 
 export const defaults: SelectableOptions = {
