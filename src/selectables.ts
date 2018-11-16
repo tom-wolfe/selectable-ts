@@ -134,6 +134,11 @@ export class Selectable {
     this._selectionRectangle.style.top = y1 + 'px';
     this._selectionRectangle.style.width = (x2 - x1) + 'px';
     this._selectionRectangle.style.height = (y2 - y1) + 'px';
+
+    this._items.forEach(el => {
+      el.classList.toggle(this._options.selectedClass, elementsIntersect(this._selectionRectangle, el));
+    });
+
   }).bind(this);
 
   private onMouseUp = ((e: MouseEvent) => {
@@ -146,7 +151,6 @@ export class Selectable {
     this._items.forEach(el => {
       if (elementsIntersect(this._selectionRectangle, el)) {
         selected.push(el);
-        el.classList.add(this._options.selectedClass);
         this._select.next(el);
       }
       allowElementClick(el, true);
