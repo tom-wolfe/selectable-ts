@@ -1,5 +1,4 @@
-# SelectableTS [![NPM version](https://badge.fury.io/js/selectable-ts.svg)](http://badge.fury.io/js/selectable-ts)
-
+# SelectableTS
 A TypeScript library for adding drag select functionality. Based on [p34eu/selectables](https://github.com/p34eu/selectables).
 
 ## Usage
