@@ -1,5 +1,5 @@
 import { defaults, SelectableOptions } from './options';
-import { elementsIntersect, disableClick, enableClick } from './utils';
+import { elementsIntersect, allowElementClick } from './utils';
 
 /*
  *   Adapted from: https://github.com/p34eu/Selectables.git
@@ -68,30 +68,38 @@ export class Selectable {
     this._selectionRectangle = null;
   }
 
-  private disableTextSelection() {
-    this._userSelect = document.body.style.userSelect;
-    document.body.style.userSelect = 'none';
-  }
-
-  private enableTextSelection() {
-    document.body.style.userSelect = this._userSelect;
-    this._userSelect = undefined;
+  private setTextSelection(enabled: boolean) {
+    if (enabled) {
+      document.body.style.userSelect = this._userSelect;
+      this._userSelect = undefined;
+    } else {
+      this._userSelect = document.body.style.userSelect;
+      document.body.style.userSelect = 'none';
+    }
   }
 
   private onMouseDown = ((e: MouseEvent) => {
     if (e.button !== 0) { return; } // Only fire on left mouse button.
     this._mouseDownPosition = [e.pageX, e.pageY];
 
-    this.disableTextSelection();
+    this.setTextSelection(false);
 
-    this._items.forEach(el => {
-      disableClick(el);
-      if (!e['ctrlKey']) {
-        el.classList.remove(this._options.selectedClass);
+    const els = document.elementsFromPoint(e.pageX, e.pageY);
+    const curEl = this._items.find(i => els.includes(i));
+
+    if (e['ctrlKey']) {
+      if (curEl) {
+        allowElementClick(curEl, false);
+        curEl.classList.toggle(this._options.selectedClass);
       }
-    });
+    } else {
+      this._items.forEach(el => {
+        allowElementClick(el, false);
+        el.classList.toggle(this._options.selectedClass, el === curEl);
+      });
+      this.createSelectionRectangle(e.pageX, e.pageY);
+    }
 
-    this.createSelectionRectangle(e.pageX, e.pageY);
   }).bind(this);
 
   private onMouseMove = ((e: MouseEvent) => {
@@ -116,18 +124,13 @@ export class Selectable {
 
     this._items.forEach(el => {
       if (elementsIntersect(this._selectionRectangle, el)) {
-        if (e['shiftKey']) {
-          el.classList.add(this._options.selectedClass);
-        } else {
-          el.classList.toggle(this._options.selectedClass);
-        }
-        
+        el.classList.add(this._options.selectedClass);
       }
-      enableClick(el);
+      allowElementClick(el, true);
     });
 
     this.removeSelectionRectangle();
-    this.enableTextSelection();
+    this.setTextSelection(true);
 
   }).bind(this);
 }

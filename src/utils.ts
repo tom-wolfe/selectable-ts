@@ -18,10 +18,10 @@ function suspend(e: Event) {
   e.stopPropagation();
 } 
 
-export function disableClick(el: HTMLElement) {
-  el.addEventListener('click', suspend, true);
-}
-
-export function enableClick(el: HTMLElement) {
-  el.removeEventListener('click', suspend, true);
+export function allowElementClick(el: HTMLElement, enabled: boolean) {
+  if (enabled) {
+    el.removeEventListener('click', suspend, true);
+  } else {
+    el.addEventListener('click', suspend, true);
+  }
 }
