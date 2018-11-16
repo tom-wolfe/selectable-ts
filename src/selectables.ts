@@ -41,6 +41,8 @@ export class Selectable {
 
     this.setTextSelection(false);
 
+    this._items = Array.from(this.zone.querySelectorAll(this._options.elements));
+
     const els = document.elementsFromPoint(e.pageX, e.pageY);
     const curEl = this._items.find(i => els.includes(i));
 
@@ -114,7 +116,6 @@ export class Selectable {
     document.body.addEventListener('mousemove', this.onMouseMove);
     window.addEventListener('mouseup', this.onMouseUp);
 
-    this._items = Array.from(this.zone.querySelectorAll(this._options.elements));
     this._enabled = true;
   }
 
