@@ -1,4 +1,5 @@
 import { defaults, SelectableOptions } from './options';
+import { elementsIntersect } from './utils';
 
 /*
  *   Adapted from: https://github.com/p34eu/Selectables.git
@@ -6,14 +7,12 @@ import { defaults, SelectableOptions } from './options';
 
 export class Selectable {
   private _enabled = false;
+  private _userSelect: string;
   private _options: SelectableOptions;
   private _zone: HTMLElement;
-  private _items: NodeListOf<Element>;
-  private _ipos: [number, number];
-
-  private _zoneMouseDown = this.zoneMouseDown.bind(this);
-  private _select = this.select.bind(this);
-  private _rectDraw = this.rectDraw.bind(this);
+  private _items: HTMLElement[];
+  private _selectionRectangle: HTMLDivElement;
+  private _mouseDownPosition: [number, number];
 
   constructor(options?: Partial<SelectableOptions>) {
     this.loadOptions(options);
@@ -23,113 +22,112 @@ export class Selectable {
   public get enabled(): boolean { return this._enabled; }
   public get zone(): HTMLElement { return this._zone; }
 
-  loadOptions(options: Partial<SelectableOptions>) {
-    this._options = Object.assign({}, defaults, options);
-    
-    // Load the zone.
-    this._zone = typeof this._options.zone === 'string' 
-      ? document.querySelector(this._options.zone) : this._options.zone;   
-    if (!this.zone) { throw new Error('No zone element found.'); }
-  }
-
-  enable() {
+  public enable() {
     if (this.enabled) { return; }
 
-    this._items = this.zone.querySelectorAll(this._options.elements);
-    this.zone.addEventListener('mousedown', this._zoneMouseDown);
+    this.zone.addEventListener('mousedown', this.onMouseDown);
+    document.body.addEventListener('mousemove', this.onMouseMove);
+    window.addEventListener('mouseup', this.onMouseUp);
+
+    this._items = Array.from(this.zone.querySelectorAll(this._options.elements));
     this._enabled = true;
   }
 
-  disable() {
+  public disable() {
     if (!this.enabled) { return; }
-    this.zone.removeEventListener('mousedown', this._zoneMouseDown);
+
+    this.zone.removeEventListener('mousedown', this.onMouseDown);
+    document.body.removeEventListener('mousemove', this.onMouseMove);
+    window.removeEventListener('mouseup', this.onMouseUp);
+
+    this._items = [];
     this._enabled = false;
   }
 
-  suspend(e: Event) {
-    e.preventDefault();
-    e.stopPropagation();
+  private loadOptions(options: Partial<SelectableOptions>) {
+    this._options = Object.assign({}, defaults, options);
+
+    // Load the zone.
+    this._zone = typeof this._options.zone === 'string'
+      ? document.querySelector(this._options.zone) : this._options.zone;
+    if (!this.zone) { throw new Error('No zone element found.'); }
   }
 
-  zoneMouseDown(e: MouseEvent) {
-    if (this._options.start) { this._options.start(e); }
+  private createSelectionRectangle(x: number, y: number) {
+    if (!this._selectionRectangle) {
+      this._selectionRectangle = document.createElement('div');
+      this._selectionRectangle.id = 's-rectBox';
+      this._selectionRectangle.style.left = x + 'px';
+      this._selectionRectangle.style.top = y + 'px';
+      document.body.appendChild(this._selectionRectangle);
+    }
+  }
 
-    document.body.classList.add('s-noselect');
+  private removeSelectionRectangle() {
+    this._selectionRectangle.parentNode.removeChild(this._selectionRectangle);
+    this._selectionRectangle = null;
+  }
 
-    Array.from(this._items).forEach(el => {
+  private suspend(e: Event) {
+    e.preventDefault();
+    e.stopPropagation();
+  } 
+
+  private disableTextSelection() {
+    this._userSelect = document.body.style.userSelect;
+    document.body.style.userSelect = 'none';
+  }
+
+  private enableTextSelection() {
+    document.body.style.userSelect = this._userSelect;
+    this._userSelect = undefined;
+  }
+
+  private onMouseDown = ((e: MouseEvent) => {
+    this._mouseDownPosition = [e.pageX, e.pageY];
+
+    this.disableTextSelection();
+
+    this._items.forEach(el => {
       el.addEventListener('click', this.suspend, true); // skip any clicks
       if (!e['shiftKey']) {
         el.classList.remove(this._options.selectedClass);
       }
     });
 
-    this._ipos = [e.pageX, e.pageY];
-    if (!this.rb()) {
-      const gh = document.createElement('div');
-      gh.id = 's-rectBox';
-      gh.style.left = e.pageX + 'px';
-      gh.style.top = e.pageY + 'px';
-      document.body.appendChild(gh);
-    }
-    document.body.addEventListener('mousemove', this._rectDraw);
-    window.addEventListener('mouseup', this._select);
-  }
+    this.createSelectionRectangle(e.pageX, e.pageY);
+  }).bind(this);
 
-  rb() {
-    return document.getElementById('s-rectBox');
-  }
+  private onMouseMove = ((e: MouseEvent) => {
+    if (!this._mouseDownPosition || !this._selectionRectangle) { return; }
 
-  cross(a, b) {
-    const aTop = this.offset(a).top, aLeft = this.offset(a).left, bTop = this.offset(b).top, bLeft = this.offset(b).left;
-    return !(((aTop + a.offsetHeight) < (bTop)) ||
-      (aTop > (bTop + b.offsetHeight)) || ((aLeft + a.offsetWidth) < bLeft) || (aLeft > (bLeft + b.offsetWidth)));
-  }
+    // Update the position of the selection rectangle.
+    const x1 = Math.min(this._mouseDownPosition[0], e.pageX);
+    const y1 = Math.min(this._mouseDownPosition[1], e.pageY);
+    const x2 = Math.max(this._mouseDownPosition[0], e.pageX);
+    const y2 = Math.max(this._mouseDownPosition[1], e.pageY);
 
-  select(e) {
-    const a = this.rb();
-    if (!a) { return; }
-    this._ipos = null;
+    this._selectionRectangle.style.left = x1 + 'px';
+    this._selectionRectangle.style.top = y1 + 'px';
+    this._selectionRectangle.style.width = (x2 - x1) + 'px';
+    this._selectionRectangle.style.height = (y2 - y1) + 'px';
+  }).bind(this);
 
-    document.body.classList.remove('s-noselect');
-    document.body.removeEventListener('mousemove', this._rectDraw);
-    window.removeEventListener('mouseup', this._select);
+  private onMouseUp = ((e: MouseEvent) => {
+    if (!this._mouseDownPosition || !this._selectionRectangle) { return; }
+    this._mouseDownPosition = undefined;
+
+    this.enableTextSelection();
+
     const s = this._options.selectedClass;
-    Array.from(this._items).forEach(el => {
-      if (this.cross(a, el) === true) {
-        if (el.classList.contains(s)) {
-          el.classList.remove(s);
-          if (this._options.onDeselect) { this._options.onDeselect(el); }
-        } else {
-          el.classList.add(s);
-          if (this._options.onSelect) { this._options.onSelect(el); }
-        }
+    this._items.forEach(el => {
+      if (elementsIntersect(this._selectionRectangle, el) === true) {
+        el.classList.toggle(s)
       }
       setTimeout(() => {
         el.removeEventListener('click', this.suspend, true);
       }, 100);
     });
-    a.parentNode.removeChild(a);
-    if (this._options.stop) { this._options.stop(e); }
-  }
-
-  rectDraw(e) {
-    const g = this.rb();
-    if (!this._ipos || g === null) {
-      return;
-    }
-    let tmp, x1 = this._ipos[0], y1 = this._ipos[1], x2 = e.pageX, y2 = e.pageY;
-    if (x1 > x2) {
-      tmp = x2, x2 = x1, x1 = tmp;
-    }
-    if (y1 > y2) {
-      tmp = y2, y2 = y1, y1 = tmp;
-    }
-    g.style.left = x1 + 'px', g.style.top = y1 + 'px', g.style.width = (x2 - x1) + 'px', g.style.height = (y2 - y1) + 'px';
-  }
-
-  offset(el) {
-    const r = el.getBoundingClientRect();
-    return { top: r.top + document.body.scrollTop, left: r.left + document.body.scrollLeft };
-  }
-
+    this.removeSelectionRectangle();
+  }).bind(this);
 }
