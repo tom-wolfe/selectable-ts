@@ -1,5 +1,6 @@
 import { defaults, SelectableOptions } from './options';
 import { elementsIntersect, allowElementClick } from './utils';
+import { Subject, Observable } from 'rxjs';
 
 /*
  *   Adapted from: https://github.com/p34eu/Selectables.git
@@ -13,6 +14,16 @@ export class Selectable {
   private _items: HTMLElement[];
   private _selectionRectangle: HTMLDivElement;
   private _mouseDownPosition: [number, number];
+
+  private _start: Subject<never> = new Subject<never>();
+  private _stop: Subject<HTMLElement[]> = new Subject<HTMLElement[]>();
+  private _select: Subject<HTMLElement> = new Subject<HTMLElement>();
+  private _deselect: Subject<HTMLElement> = new Subject<HTMLElement>();
+
+  public get start(): Observable<never> { return this._start.asObservable(); }
+  public get stop(): Observable<HTMLElement[]> { return this._stop.asObservable(); }
+  public get select(): Observable<HTMLElement> { return this._select.asObservable(); }
+  public get deselect(): Observable<HTMLElement> { return this._deselect.asObservable(); }
 
   constructor(options?: Partial<SelectableOptions>) {
     this.loadOptions(options);
@@ -82,6 +93,8 @@ export class Selectable {
     if (e.button !== 0) { return; } // Only fire on left mouse button.
     this._mouseDownPosition = [e.pageX, e.pageY];
 
+    this._start.next();
+
     this.setTextSelection(false);
 
     const els = document.elementsFromPoint(e.pageX, e.pageY);
@@ -90,12 +103,18 @@ export class Selectable {
     if (e['ctrlKey']) {
       if (curEl) {
         allowElementClick(curEl, false);
-        curEl.classList.toggle(this._options.selectedClass);
+        (curEl.classList.toggle(this._options.selectedClass) ? this._select : this._deselect).next(curEl);
+        this._stop.next([curEl]);
       }
     } else {
       this._items.forEach(el => {
         allowElementClick(el, false);
-        el.classList.toggle(this._options.selectedClass, el === curEl);
+        if (el === curEl) {
+          el.classList.add(this._options.selectedClass);
+        } else if (el.classList.contains(this._options.selectedClass)) {
+          el.classList.remove(this._options.selectedClass);
+          this._deselect.next(el);
+        }
       });
       this.createSelectionRectangle(e.pageX, e.pageY);
     }
@@ -119,18 +138,24 @@ export class Selectable {
 
   private onMouseUp = ((e: MouseEvent) => {
     if (e.button !== 0) { return; } // Only fire on left mouse button.
-    if (!this._mouseDownPosition) { return; }
+    if (!this._mouseDownPosition || !this._selectionRectangle) { return; }
     this._mouseDownPosition = undefined;
+
+    const selected: HTMLElement[] = [];
 
     this._items.forEach(el => {
       if (elementsIntersect(this._selectionRectangle, el)) {
+        selected.push(el);
         el.classList.add(this._options.selectedClass);
+        this._select.next(el);
       }
       allowElementClick(el, true);
     });
 
     this.removeSelectionRectangle();
     this.setTextSelection(true);
+
+    this._stop.next(selected);
 
   }).bind(this);
 }
