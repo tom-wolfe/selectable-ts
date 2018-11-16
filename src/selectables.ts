@@ -16,23 +16,26 @@ export class Selectable {
   private _rectDraw = this.rectDraw.bind(this);
 
   constructor(options?: Partial<SelectableOptions>) {
-    this._options = Object.assign({}, defaults, options);
+    this.loadOptions(options);
     this.enable();
   }
 
   public get enabled(): boolean { return this._enabled; }
-  public get options(): SelectableOptions { return this._options; }
   public get zone(): HTMLElement { return this._zone; }
+
+  loadOptions(options: Partial<SelectableOptions>) {
+    this._options = Object.assign({}, defaults, options);
+    
+    // Load the zone.
+    this._zone = typeof this._options.zone === 'string' 
+      ? document.querySelector(this._options.zone) : this._options.zone;   
+    if (!this.zone) { throw new Error('No zone element found.'); }
+  }
 
   enable() {
     if (this.enabled) { return; }
 
-    this._zone = document.querySelector(this._options.zone);
-    if (!this.zone) {
-      throw new Error(this.constructor.name + ' :: no zone defined in options. Please use element with ID');
-    }
-
-    this._items = document.querySelectorAll(this.options.zone + ' ' + this.options.elements);
+    this._items = this.zone.querySelectorAll(this._options.elements);
     this.zone.addEventListener('mousedown', this._zoneMouseDown);
     this._enabled = true;
   }
@@ -49,14 +52,14 @@ export class Selectable {
   }
 
   zoneMouseDown(e: MouseEvent) {
-    if (this.options.start) { this.options.start(e); }
+    if (this._options.start) { this._options.start(e); }
 
     document.body.classList.add('s-noselect');
 
     Array.from(this._items).forEach(el => {
       el.addEventListener('click', this.suspend, true); // skip any clicks
       if (!e['shiftKey']) {
-        el.classList.remove(this.options.selectedClass);
+        el.classList.remove(this._options.selectedClass);
       }
     });
 
@@ -90,15 +93,15 @@ export class Selectable {
     document.body.classList.remove('s-noselect');
     document.body.removeEventListener('mousemove', this._rectDraw);
     window.removeEventListener('mouseup', this._select);
-    const s = this.options.selectedClass;
+    const s = this._options.selectedClass;
     Array.from(this._items).forEach(el => {
       if (this.cross(a, el) === true) {
         if (el.classList.contains(s)) {
           el.classList.remove(s);
-          if (this.options.onDeselect) { this.options.onDeselect(el); }
+          if (this._options.onDeselect) { this._options.onDeselect(el); }
         } else {
           el.classList.add(s);
-          if (this.options.onSelect) { this.options.onSelect(el); }
+          if (this._options.onSelect) { this._options.onSelect(el); }
         }
       }
       setTimeout(() => {
@@ -106,7 +109,7 @@ export class Selectable {
       }, 100);
     });
     a.parentNode.removeChild(a);
-    if (this.options.stop) { this.options.stop(e); }
+    if (this._options.stop) { this._options.stop(e); }
   }
 
   rectDraw(e) {

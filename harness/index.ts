@@ -4,6 +4,6 @@ document.addEventListener('DOMContentLoaded', function () {
   var foo = new Selectable({
     elements: 'a',
     selectedClass: 'active',
-    zone: '#zone1'
+    zone: document.getElementById('selectlist')
   });
 });
