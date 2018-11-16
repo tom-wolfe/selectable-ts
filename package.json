@@ -4,6 +4,7 @@
   "description": "A TypeScript library for adding drag select functionality.",
   "main": "index.js",
   "scripts": {
+    "start": "webpack-dev-server",
     "build": "npm run clean && npm run lint && npm run tsc",
     "clean": "node ./node_modules/rimraf/bin ./dist",
     "lint": "tslint -p ./tslint.json",
@@ -31,8 +32,11 @@
   "homepage": "https://github.com/trwolfe13/selectable-ts#readme",
   "devDependencies": {
     "rimraf": "^2.6.2",
+    "ts-loader": "^5.3.0",
     "tslint": "^5.11.0",
     "typescript": "^3.1.6",
-    "webpack": "^4.25.1"
+    "webpack": "^4.25.1",
+    "webpack-cli": "^3.1.2",
+    "webpack-dev-server": "^3.1.10"
   }
 }
