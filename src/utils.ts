@@ -12,3 +12,16 @@ export function elementsIntersect(a: HTMLElement, b: HTMLElement): boolean {
     || ((aLeft + a.offsetWidth) < bLeft)
     || (aLeft > (bLeft + b.offsetWidth)));
 }
+
+function suspend(e: Event) {
+  e.preventDefault();
+  e.stopPropagation();
+} 
+
+export function disableClick(el: HTMLElement) {
+  el.addEventListener('click', suspend, true);
+}
+
+export function enableClick(el: HTMLElement) {
+  el.removeEventListener('click', suspend, true);
+}

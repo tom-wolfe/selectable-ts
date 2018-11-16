@@ -1,5 +1,5 @@
 import { defaults, SelectableOptions } from './options';
-import { elementsIntersect } from './utils';
+import { elementsIntersect, disableClick, enableClick } from './utils';
 
 /*
  *   Adapted from: https://github.com/p34eu/Selectables.git
@@ -68,11 +68,6 @@ export class Selectable {
     this._selectionRectangle = null;
   }
 
-  private suspend(e: Event) {
-    e.preventDefault();
-    e.stopPropagation();
-  } 
-
   private disableTextSelection() {
     this._userSelect = document.body.style.userSelect;
     document.body.style.userSelect = 'none';
@@ -84,13 +79,14 @@ export class Selectable {
   }
 
   private onMouseDown = ((e: MouseEvent) => {
+    if (e.button !== 0) { return; } // Only fire on left mouse button.
     this._mouseDownPosition = [e.pageX, e.pageY];
 
     this.disableTextSelection();
 
     this._items.forEach(el => {
-      el.addEventListener('click', this.suspend, true); // skip any clicks
-      if (!e['shiftKey']) {
+      disableClick(el);
+      if (!e['ctrlKey']) {
         el.classList.remove(this._options.selectedClass);
       }
     });
@@ -114,20 +110,24 @@ export class Selectable {
   }).bind(this);
 
   private onMouseUp = ((e: MouseEvent) => {
-    if (!this._mouseDownPosition || !this._selectionRectangle) { return; }
+    if (e.button !== 0) { return; } // Only fire on left mouse button.
+    if (!this._mouseDownPosition) { return; }
     this._mouseDownPosition = undefined;
 
+    this._items.forEach(el => {
+      if (elementsIntersect(this._selectionRectangle, el)) {
+        if (e['shiftKey']) {
+          el.classList.add(this._options.selectedClass);
+        } else {
+          el.classList.toggle(this._options.selectedClass);
+        }
+        
+      }
+      enableClick(el);
+    });
+
+    this.removeSelectionRectangle();
     this.enableTextSelection();
 
-    const s = this._options.selectedClass;
-    this._items.forEach(el => {
-      if (elementsIntersect(this._selectionRectangle, el) === true) {
-        el.classList.toggle(s)
-      }
-      setTimeout(() => {
-        el.removeEventListener('click', this.suspend, true);
-      }, 100);
-    });
-    this.removeSelectionRectangle();
   }).bind(this);
 }
