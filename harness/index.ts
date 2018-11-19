@@ -4,7 +4,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const foo = new Selectable({
     elements: 'a',
     selectedClass: 'active',
-    zone: document.getElementById('selectlist')
+    zone: document.getElementById('selectlist'),
+    behavior: 'checked-list'
   });
 
   foo.start.subscribe(_ => console.log('Selection started...'));

@@ -1,13 +1,17 @@
+import { SelectableBehavior } from './behavior';
+
+export type BehaviorMode = 'list' | 'checked-list';
+
 export interface SelectableOptions {
   zone: string | HTMLElement;
   elements: string;
   selectedClass: string;
-  behaviourMode: 'list' | 'checked-list';
+  behavior: BehaviorMode | SelectableBehavior;
 }
 
 export const defaults: SelectableOptions = {
   zone: '#wrapper',
   elements: 'a',
   selectedClass: 'active',
-  behaviourMode: 'list'
+  behavior: 'list'
 };

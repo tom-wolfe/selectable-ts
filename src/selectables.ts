@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { createBehavior, SelectableBehavior } from './behaviour';
+import { createBehavior, SelectableBehavior } from './behavior';
 import { SelectableController } from './controller';
 import { defaults, SelectableOptions } from './options';
 
@@ -70,7 +70,8 @@ export class Selectable {
       ? document.querySelector(this._options.zone) : this._options.zone;
     if (!this.zone) { throw new Error('No zone element found.'); }
 
-    this._behavior = createBehavior(this._options.behaviourMode, this._controller);
+    this._behavior = typeof this._options.behavior === 'string'
+      ? createBehavior(this._options.behavior, this._controller) : this._options.behavior;
   }
 
 }
