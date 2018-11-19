@@ -1,8 +1,8 @@
 {
   "name": "selectable-ts",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "A TypeScript library for adding drag select functionality.",
-  "main": "index.js",
+  "main": "js/index.js",
   "scripts": {
     "start": "webpack-dev-server",
     "build": "npm run clean && npm run lint && npm run tsc && node ./build/index.js",

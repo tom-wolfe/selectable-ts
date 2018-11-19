@@ -1,4 +1,4 @@
-#s-rectBox { 
+.selection-rectangle { 
   position: absolute;
   z-index: 1090;
   border:2px dashed #cbd3e3; 

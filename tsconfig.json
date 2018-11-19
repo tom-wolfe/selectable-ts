@@ -1,7 +1,7 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "outDir": "./dist",
+    "outDir": "./dist/js",
     "baseUrl": "./src",
     "sourceMap": true,
     "declaration": true,
@@ -19,6 +19,7 @@
   },
   "exclude": [
     "./node_modules",
-    "./harness"
+    "./harness",
+    "./dist"
   ]
 }

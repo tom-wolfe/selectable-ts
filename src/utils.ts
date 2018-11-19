@@ -4,6 +4,8 @@ function elementOffset(el: HTMLElement): [number, number] {
 }
 
 export function elementsIntersect(a: HTMLElement, b: HTMLElement): boolean {
+  if (!a || !b) { return false; }
+
   const [aTop, aLeft] = elementOffset(a);
   const [bTop, bLeft] = elementOffset(b);
 
@@ -19,6 +21,7 @@ function suspend(e: Event) {
 }
 
 export function allowElementClick(el: HTMLElement, enabled: boolean) {
+  if (!el) { return; }
   const events = ['click', 'ondragstart'];
   if (enabled) {
     events.forEach(e => el.removeEventListener(e, suspend, true));
