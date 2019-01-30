@@ -1,4 +1,4 @@
-import { Selectable } from '../src';
+import { Selectable, ChangeEvent } from '../src';
 
 document.addEventListener('DOMContentLoaded', function () {
   const foo = new Selectable({
@@ -11,5 +11,8 @@ document.addEventListener('DOMContentLoaded', function () {
   foo.start.subscribe(_ => console.log('Selection started...'));
   foo.select.subscribe(e => console.log('Element selected...', e.innerText));
   foo.deselect.subscribe(e => console.log('Element deselected...', e.innerText));
-  foo.stop.subscribe(i => console.log('Selection stopped...'));
+  foo.stop.subscribe(_ => console.log('Selection stopped...'));
+  foo.change.subscribe((e: ChangeEvent) => {
+    console.log('Selection changed...', e.index, e.element.innerText, e.selected);
+  });
 });

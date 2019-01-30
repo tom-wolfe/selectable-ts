@@ -2,6 +2,7 @@ import { Observable } from 'rxjs';
 import { createBehavior, SelectableBehavior } from './behavior';
 import { SelectableController } from './controller';
 import { defaults, SelectableOptions } from './options';
+import { ChangeEvent } from 'events';
 
 export class Selectable {
   private _behavior: SelectableBehavior;
@@ -14,6 +15,7 @@ export class Selectable {
   public get start(): Observable<never> { return this._controller.start; }
   public get select(): Observable<HTMLElement> { return this._controller.select; }
   public get deselect(): Observable<HTMLElement> { return this._controller.deselect; }
+  public get change(): Observable<ChangeEvent> { return this._controller.change; }
   public get stop(): Observable<never> { return this._controller.stop; }
 
   constructor(options?: Partial<SelectableOptions>) {

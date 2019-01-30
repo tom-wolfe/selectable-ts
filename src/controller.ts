@@ -1,11 +1,13 @@
 import { Subject, Observable } from 'rxjs';
 import { SelectableOptions } from './options';
 import { allowElementClick, elementsIntersect } from './utils';
+import { ChangeEvent } from './events';
 
 export class SelectableController {
   private _userSelect: string;
   private _select: Subject<HTMLElement> = new Subject<HTMLElement>();
   private _deselect: Subject<HTMLElement> = new Subject<HTMLElement>();
+  private _change: Subject<ChangeEvent> = new Subject<ChangeEvent>();
   private _start: Subject<never> = new Subject<never>();
   private _stop: Subject<never> = new Subject<never>();
 
@@ -15,6 +17,7 @@ export class SelectableController {
   public get start(): Observable<never> { return this._start.asObservable(); }
   public get select(): Observable<HTMLElement> { return this._select.asObservable(); }
   public get deselect(): Observable<HTMLElement> { return this._deselect.asObservable(); }
+  public get change(): Observable<ChangeEvent> { return this._change.asObservable(); }
   public get stop(): Observable<never> { return this._stop.asObservable(); }
 
   constructor(private _options: SelectableOptions) { }
@@ -48,22 +51,24 @@ export class SelectableController {
     this.items = Array.from(zone.querySelectorAll(selector));
   }
 
-  public selectItem(el: HTMLElement) {
-    if (this.itemSelected(el)) { return; }
-    el.classList.add(this._options.selectedClass);
-    this._select.next(el);
+  public selectItem(element: HTMLElement) {
+    if (this.itemSelected(element)) { return; }
+    element.classList.add(this._options.selectedClass);
+    this._select.next(element);
+    this._change.next({ element, selected: true, index: this.items.indexOf(element) });  }
+
+  public deselectItem(element: HTMLElement) {
+    if (!this.itemSelected(element)) { return; }
+    element.classList.remove(this._options.selectedClass);
+    this._deselect.next(element);
+    this._change.next({ element, selected: true, index: this.items.indexOf(element) });
   }
 
-  public deselectItem(el: HTMLElement) {
-    if (!this.itemSelected(el)) { return; }
-    el.classList.remove(this._options.selectedClass);
-    this._deselect.next(el);
-  }
-
-  public toggleItem(el: HTMLElement, force?: boolean) {
-    if (force !== undefined && el.classList.contains(this._options.selectedClass) === force) { return; }
-    const toggle = el.classList.toggle(this._options.selectedClass, force);
-    (toggle ? this._select : this._deselect).next(el);
+  public toggleItem(element: HTMLElement, force?: boolean) {
+    if (force !== undefined && element.classList.contains(this._options.selectedClass) === force) { return; }
+    const selected = element.classList.toggle(this._options.selectedClass, force);
+    (selected ? this._select : this._deselect).next(element);
+    this._change.next({ element, selected, index: this.items.indexOf(element) });
   }
 
   public itemSelected(el: HTMLElement): boolean {
