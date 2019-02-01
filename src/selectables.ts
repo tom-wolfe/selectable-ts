@@ -2,7 +2,7 @@ import { Observable } from 'rxjs';
 import { createBehavior, SelectableBehavior } from './behavior';
 import { SelectableController } from './controller';
 import { defaults, SelectableOptions } from './options';
-import { ChangeEvent } from 'events';
+import { ChangeEvent } from './events';
 
 export class Selectable {
   private _behavior: SelectableBehavior;
