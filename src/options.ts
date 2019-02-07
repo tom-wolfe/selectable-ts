@@ -1,6 +1,6 @@
 import { SelectableBehavior } from './behavior';
 
-export type BehaviorMode = 'list' | 'checked-list';
+export type BehaviorMode = 'list' | 'checked-list' | 'single';
 
 export interface SelectableOptions {
   zone: string | HTMLElement;

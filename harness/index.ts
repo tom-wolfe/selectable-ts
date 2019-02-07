@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
     elements: 'a',
     selectedClass: 'active',
     zone: document.getElementById('selectlist'),
-    behavior: 'checked-list'
+    behavior: 'single'
   });
 
   foo.start.subscribe(_ => console.log('Selection started...'));

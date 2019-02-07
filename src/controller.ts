@@ -51,11 +51,16 @@ export class SelectableController {
     this.items = Array.from(zone.querySelectorAll(selector));
   }
 
+  public setItemSelected(element: HTMLElement, selected: boolean) {
+    selected ? this.selectItem(element) : this.deselectItem(element);
+  }
+
   public selectItem(element: HTMLElement) {
     if (this.itemSelected(element)) { return; }
     element.classList.add(this._options.selectedClass);
     this._select.next(element);
-    this._change.next({ element, selected: true, index: this.items.indexOf(element) });  }
+    this._change.next({ element, selected: true, index: this.items.indexOf(element) });
+  }
 
   public deselectItem(element: HTMLElement) {
     if (!this.itemSelected(element)) { return; }
@@ -76,6 +81,8 @@ export class SelectableController {
   }
 
   public updateSelectionRectangle(start: [number, number], stop: [number, number]) {
+    if (!this.selectionRectangle) { return; }
+    
     // Update the position of the selection rectangle.
     const x1 = Math.min(start[0], stop[0]);
     const x2 = Math.max(start[0], stop[0]);

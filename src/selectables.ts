@@ -47,9 +47,12 @@ export class Selectable {
     this._controller.end();
   }).bind(this);
 
+  private onDragStart = ((e: DragEvent) => e.preventDefault()).bind(this);
+
   public enable() {
     if (this.enabled) { return; }
     this.zone.addEventListener('mousedown', this.onMouseDown);
+    this.zone.addEventListener('dragstart', this.onDragStart);
     document.body.addEventListener('mousemove', this.onMouseMove);
     window.addEventListener('mouseup', this.onMouseUp);
     this._enabled = true;
@@ -58,6 +61,7 @@ export class Selectable {
   public disable() {
     if (!this.enabled) { return; }
     this.zone.removeEventListener('mousedown', this.onMouseDown);
+    this.zone.removeEventListener('dragstart', this.onDragStart);
     document.body.removeEventListener('mousemove', this.onMouseMove);
     window.removeEventListener('mouseup', this.onMouseUp);
     this._enabled = false;
