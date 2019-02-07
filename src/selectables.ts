@@ -77,7 +77,6 @@ export class Selectable {
     if (!this.zone) { throw new Error('No zone element found.'); }
 
     this._behavior = typeof this._options.behavior === 'string'
-      ? createBehavior(this._options.behavior, this._controller) : this._options.behavior;
+      ? createBehavior(this._options.behavior, this._controller) : this._options.behavior(this._controller);
   }
-
 }

@@ -20,7 +20,9 @@ export class SelectableController {
   public get change(): Observable<ChangeEvent> { return this._change.asObservable(); }
   public get stop(): Observable<never> { return this._stop.asObservable(); }
 
-  constructor(private _options: SelectableOptions) { }
+  constructor(private _options: SelectableOptions) {
+    this.change.subscribe(e => (e.selected ? this._select : this._deselect).next(e.element));
+  }
 
   public begin(zone: HTMLElement, elementSelector: string) {
     this._start.next();
@@ -58,21 +60,18 @@ export class SelectableController {
   public selectItem(element: HTMLElement) {
     if (this.itemSelected(element)) { return; }
     element.classList.add(this._options.selectedClass);
-    this._select.next(element);
     this._change.next({ element, selected: true, index: this.items.indexOf(element) });
   }
 
   public deselectItem(element: HTMLElement) {
     if (!this.itemSelected(element)) { return; }
     element.classList.remove(this._options.selectedClass);
-    this._deselect.next(element);
-    this._change.next({ element, selected: true, index: this.items.indexOf(element) });
+    this._change.next({ element, selected: false, index: this.items.indexOf(element) });
   }
 
   public toggleItem(element: HTMLElement, force?: boolean) {
     if (force !== undefined && element.classList.contains(this._options.selectedClass) === force) { return; }
     const selected = element.classList.toggle(this._options.selectedClass, force);
-    (selected ? this._select : this._deselect).next(element);
     this._change.next({ element, selected, index: this.items.indexOf(element) });
   }
 
