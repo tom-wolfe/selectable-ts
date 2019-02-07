@@ -1,5 +1,5 @@
 import { SelectableBehavior } from './behavior';
-import { SelectableController } from 'controller';
+import { SelectableController } from './controller';
 
 export type BehaviorMode = 'list' | 'checked-list' | 'single';
 export type BehaviorFactory = (controller: SelectableController) => SelectableBehavior;
