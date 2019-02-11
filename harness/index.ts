@@ -1,11 +1,21 @@
 import { Selectable, ChangeEvent } from '../src';
 
 document.addEventListener('DOMContentLoaded', function () {
+  const zone = document.getElementById('selectlist');
+  
+  for (let x = 0; x < 1000; x++) {
+    const a = document.createElement('a');
+    a.href = '#';
+    a.className = 'list-group-item';
+    a.innerText = 'List Item #' + x.toString();
+    zone.appendChild(a);
+  }
+  
   const foo = new Selectable({
     elements: 'a',
     selectedClass: 'active',
-    zone: document.getElementById('selectlist'),
-    behavior: 'single'
+    zone,
+    behavior: 'checked-list'
   });
 
   foo.start.subscribe(_ => console.log('Selection started...'));
