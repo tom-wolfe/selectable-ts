@@ -57,10 +57,18 @@ export class SelectableController {
     selected ? this.selectItem(element) : this.deselectItem(element);
   }
 
+  public selectAll() {
+    this.items.forEach(el => this.selectItem(el));
+  }
+
   public selectItem(element: HTMLElement) {
     if (this.itemSelected(element)) { return; }
     element.classList.add(this._options.selectedClass);
     this._change.next({ element, selected: true, index: this.items.indexOf(element) });
+  }
+
+  public deselectAll() {
+    this.items.forEach(el => this.deselectItem(el));
   }
 
   public deselectItem(element: HTMLElement) {

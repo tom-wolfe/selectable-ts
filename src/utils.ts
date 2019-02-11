@@ -22,10 +22,7 @@ function suspend(e: Event) {
 
 export function allowElementClick(el: HTMLElement, enabled: boolean) {
   if (!el) { return; }
-  const events = ['click', 'ondragstart'];
-  if (enabled) {
-    events.forEach(e => el.removeEventListener(e, suspend, true));
-  } else {
-    events.forEach(e => el.addEventListener(e, suspend, true));
-  }
+  enabled
+    ? el.removeEventListener('click', suspend, true)
+    : el.addEventListener('click', suspend, true);
 }

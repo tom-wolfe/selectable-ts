@@ -28,9 +28,11 @@ export class Selectable {
 
   private onMouseDown = ((e: MouseEvent) => {
     if (e.button !== 0) { return; } // Only fire on left mouse button.
+    document.body.addEventListener('mousemove', this.onMouseMove);
     this._mouseDownPosition = [e.pageX, e.pageY];
     this._controller.begin(this._zone, this._options.elements);
     this._behavior.onMouseDown(e);
+    
   }).bind(this);
 
   private onMouseMove = ((e: MouseEvent) => {
@@ -41,6 +43,7 @@ export class Selectable {
 
   private onMouseUp = ((e: MouseEvent) => {
     if (e.button !== 0) { return; } // Only fire on left mouse button.
+    document.body.removeEventListener('mousemove', this.onMouseMove);
     if (!this._mouseDownPosition) { return; }
     this._mouseDownPosition = undefined;
     this._behavior.onMouseUp(e);
@@ -53,7 +56,6 @@ export class Selectable {
     if (this.enabled) { return; }
     this.zone.addEventListener('mousedown', this.onMouseDown);
     this.zone.addEventListener('dragstart', this.onDragStart);
-    document.body.addEventListener('mousemove', this.onMouseMove);
     window.addEventListener('mouseup', this.onMouseUp);
     this._enabled = true;
   }
@@ -62,10 +64,12 @@ export class Selectable {
     if (!this.enabled) { return; }
     this.zone.removeEventListener('mousedown', this.onMouseDown);
     this.zone.removeEventListener('dragstart', this.onDragStart);
-    document.body.removeEventListener('mousemove', this.onMouseMove);
     window.removeEventListener('mouseup', this.onMouseUp);
     this._enabled = false;
   }
+
+  public selectAll() { this._controller.selectAll(); }
+  public deselectAll() { this._controller.deselectAll(); }
 
   private loadOptions(options: Partial<SelectableOptions>) {
     this._options = Object.assign({}, defaults, options);

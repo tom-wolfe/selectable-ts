@@ -1,6 +1,6 @@
 {
   "name": "selectable-ts",
-  "version": "2.2.2",
+  "version": "2.3.0",
   "description": "A TypeScript library for adding drag select functionality.",
   "main": "js/index.js",
   "scripts": {
